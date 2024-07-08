@@ -135,18 +135,18 @@ class iGIF(GIF) :
 
         # PRINT PARAMETERS        
 
-        print "\n#####################################"
-        print "iGIF model comparison"
-        print "#####################################\n"
+        print( "\n#####################################")
+        print( "iGIF model comparison")
+        print( "#####################################\n")
         
         cnt = 0
         for iGIF in iGIFs :
             
-            print "Model: " + labels[cnt]          
+            print( "Model: " + labels[cnt])          
             iGIF.printParameters()
             cnt+=1
 
-        print "#####################################\n"                
+        print( "#####################################\n")                
         
         
                 

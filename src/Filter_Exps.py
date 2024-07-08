@@ -51,7 +51,7 @@ class Filter_Exps(Filter) :
  
     def setFilter_Function(self, f):
         
-        print "This function is not yet available."
+        print ("This function is not yet available.")
         
               
     
@@ -86,7 +86,7 @@ class Filter_Exps(Filter) :
         
         else :
             
-            print "Error: number of filter coefficients does not match the number of basis functions!"
+            print ("Error: number of filter coefficients does not match the number of basis functions!")
         
         return 0
         

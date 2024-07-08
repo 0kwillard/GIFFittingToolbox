@@ -309,9 +309,9 @@ class iGIF_NP(iGIF) :
         
         # Three step procedure used for parameters extraction 
         
-        print "\n################################"
-        print "# Fit iGIF_NP"
-        print "################################\n"
+        print( "\n################################")
+        print( "# Fit iGIF_NP")
+        print( "################################\n")
         
         self.fitVoltageReset(experiment, self.Tref, do_plot=False)
         
@@ -363,14 +363,14 @@ class iGIF_NP(iGIF) :
                 V_min = self.Vr + 0.5
         
 
-        print "\nDefine binning to extract theta_inf (V)..."
-        print "Interval: %0.1f - %0.1f " % (V_min, V_max)
+        print( "\nDefine binning to extract theta_inf (V)...")
+        print( "Interval: %0.1f - %0.1f " % (V_min, V_max))
         
         self.theta_bins = np.linspace(V_min, V_max, theta_inf_nbbins+1)
         self.theta_bins[-1] += 100.0
         self.theta_i = np.zeros(theta_inf_nbbins)
         
-        print "Bins (mV): ", self.theta_bins
+        print( "Bins (mV): ", self.theta_bins)
         
         
     
@@ -384,7 +384,7 @@ class iGIF_NP(iGIF) :
         
         # Fit a dynamic threshold using a initial condition the result obtained by fitting a static threshold
         
-        print "Fit dynamic threshold..."
+        print( "Fit dynamic threshold...")
         
         # Perform fit        
         beta0_dynamicThreshold = np.concatenate( ( [1/self.DV], [-self.Vt_star/self.DV], self.gamma.getCoefficients()/self.DV, self.theta_i))        
@@ -409,7 +409,7 @@ class iGIF_NP(iGIF) :
     
         for theta_tau in theta_tau_all :
     
-            print "\nTest tau_theta = %0.1f ms... \n" % (theta_tau)
+            print( "\nTest tau_theta = %0.1f ms... \n" % (theta_tau))
 
             # Precompute all the matrices used in the gradient ascent
             
@@ -450,7 +450,7 @@ class iGIF_NP(iGIF) :
     
             # Perform gradient ascent
     
-            print "Maximize log-likelihood (bit/spks)..."
+            print( "Maximize log-likelihood (bit/spks)...")
                             
             beta = beta0
             old_L = 1
@@ -472,7 +472,7 @@ class iGIF_NP(iGIF) :
                 beta = beta - learning_rate*np.dot(inv(H),G)
                     
                 if (i>0 and abs((L-old_L)/old_L) < stopCond) :              # If converged
-                    print "\nConverged after %d iterations!\n" % (i+1)
+                    print( "\nConverged after %d iterations!\n" % (i+1))
                     break
                 
                 old_L = L
@@ -483,7 +483,7 @@ class iGIF_NP(iGIF) :
                 reprint(L_norm)
         
             if (i==maxIter - 1) :                                           # If too many iterations
-                print "\nNot converged after %d iterations.\n" % (maxIter)
+                print( "\nNot converged after %d iterations.\n" % (maxIter))
     
             L_all.append(L_norm)
             beta_all.append(beta)
@@ -495,8 +495,8 @@ class iGIF_NP(iGIF) :
         beta_opt      = beta_all[ind_opt]
         L_norm_opt    = L_all[ind_opt]
         
-        print "\n Optimal timescale: %0.2f ms" % (theta_tau_opt)
-        print "Log-likelihood: %0.2f bit/spike" % (L_norm_opt)
+        print( "\n Optimal timescale: %0.2f ms" % (theta_tau_opt))
+        print( "Log-likelihood: %0.2f bit/spike" % (L_norm_opt))
             
         self.fit_all_tau_theta = theta_tau_all                     
         self.fit_all_likelihood = L_all                    
@@ -669,20 +669,20 @@ class iGIF_NP(iGIF) :
 
     def printParameters(self):
 
-        print "\n-------------------------"        
-        print "iGIF_NP model parameters:"
-        print "-------------------------"
-        print "tau_m (ms):\t%0.3f"  % (self.C/self.gl)
-        print "R (MOhm):\t%0.6f"    % (1.0/self.gl)
-        print "C (nF):\t\t%0.3f"    % (self.C)
-        print "gl (nS):\t%0.3f"     % (self.gl)
-        print "El (mV):\t%0.3f"     % (self.El)
-        print "Tref (ms):\t%0.3f"   % (self.Tref)
-        print "Vr (mV):\t%0.3f"     % (self.Vr)     
-        print "Vt* (mV):\t%0.3f"    % (self.Vt_star)    
-        print "DV (mV):\t%0.3f"     % (self.DV)  
-        print "tau_theta (ms):\t%0.3f"     % (self.theta_tau)        
-        print "-------------------------\n"
+        print( "\n-------------------------")        
+        print( "iGIF_NP model parameters:")
+        print( "-------------------------")
+        print( "tau_m (ms):\t%0.3f"  % (self.C/self.gl))
+        print( "R (MOhm):\t%0.6f"    % (1.0/self.gl))
+        print( "C (nF):\t\t%0.3f"    % (self.C))
+        print( "gl (nS):\t%0.3f"     % (self.gl))
+        print( "El (mV):\t%0.3f"     % (self.El))
+        print( "Tref (ms):\t%0.3f"   % (self.Tref))
+        print( "Vr (mV):\t%0.3f"     % (self.Vr))    
+        print( "Vt* (mV):\t%0.3f"    % (self.Vt_star))    
+        print( "DV (mV):\t%0.3f"     % (self.DV))  
+        print( "tau_theta (ms):\t%0.3f"     % (self.theta_tau))        
+        print( "-------------------------\n")
                   
                       
     def plotParameters(self) :

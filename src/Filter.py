@@ -78,7 +78,7 @@ class Filter :
         
         else :
             
-            print "Error, the number of coefficients do not match the number of basis functions!"
+            print ("Error, the number of coefficients do not match the number of basis functions!")
        
 
     def getCoefficients(self) :
@@ -120,7 +120,7 @@ class Filter :
             return (t, F_exp)
 
         else :        
-            print "Exp filter has not been performed."
+            print ("Exp filter has not been performed.")
     
       
     def computeIntegral(self, dt):

@@ -88,7 +88,7 @@ class Filter_Rect(Filter) :
         
         else :
             
-            print "Error: value of the filter coefficients does not match the number of basis functions!"
+            print ("Error: value of the filter coefficients does not match the number of basis functions!")
 
 
     ###################################################################################

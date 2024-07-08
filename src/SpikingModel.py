@@ -68,20 +68,20 @@ class SpikingModel :
     ############################################################################################
     def save(self, path):
           
-        print "Saving: " + path + "..."        
+        print( "Saving: " + path + "...")        
         f = open(path,'w')
         pkl.dump(self, f)
-        print "Done!"
+        print( "Done!")
         
         
     @classmethod
     def load(cls, path):
         
-        print "Load spiking model: " + path + "..."        
+        print( "Load spiking model: " + path + "...")        
       
         f = open(path,'r')
         model = pkl.load(f)
     
-        print "Done!" 
+        print( "Done!" )
            
         return model 

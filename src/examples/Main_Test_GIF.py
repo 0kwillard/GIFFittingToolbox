@@ -1,5 +1,16 @@
+import os
 import sys
-sys.path.append('../')
+
+main_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+
+# Function to add a directory and all its subdirectories to sys.path
+def add_subdirectories_to_syspath(base_path):
+    for root, dirs, files in os.walk(base_path):
+        if root not in sys.path:
+            sys.path.append(root)
+
+# Add all subdirectories to sys.path
+add_subdirectories_to_syspath(main_folder)
 
 from Experiment import *
 from AEC_Badel import *

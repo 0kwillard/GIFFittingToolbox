@@ -365,9 +365,9 @@ class GIF(ThresholdModel) :
         
         # Three step procedure used for parameters extraction 
         
-        print "\n################################"
-        print "# Fit GIF"
-        print "################################\n"
+        print( "\n################################")
+        print( "# Fit GIF")
+        print( "################################\n")
         
         self.fitVoltageReset(experiment, self.Tref, do_plot=False)
         
@@ -393,7 +393,7 @@ class GIF(ThresholdModel) :
         The voltage reset is estimated by computing the spike-triggered average of the voltage.
         """
         
-        print "Estimate voltage reset (Tref = %0.1f ms)..." % (Tref)
+        print( "Estimate voltage reset (Tref = %0.1f ms)..." % (Tref))
         
         # Fix absolute refractory period
         self.dt = experiment.dt
@@ -425,7 +425,7 @@ class GIF(ThresholdModel) :
             plt.plot([support[Tref_ind]], [self.Vr], '.', color='red')            
             plt.show()
         
-        print "Done! Vr = %0.2f mV (computed on %d spikes)" % (self.Vr, all_spike_nb)
+        print( "Done! Vr = %0.2f mV (computed on %d spikes)" % (self.Vr, all_spike_nb))
         
 
 
@@ -443,7 +443,7 @@ class GIF(ThresholdModel) :
         DT_beforeSpike: in ms, data right before spikes are excluded from the fit. This parameter can be used to define that time interval.
         """  
                   
-        print "\nGIF MODEL - Fit subthreshold dynamics..." 
+        print( "\nGIF MODEL - Fit subthreshold dynamics...") 
             
         # Expand eta in basis functions
         self.dt = experiment.dt
@@ -482,13 +482,13 @@ class GIF(ThresholdModel) :
             Y = np.concatenate(Y, axis=0)
         
         else :
-            print "\nError, at least one training set trace should be selected to perform fit."
+            print( "\nError, at least one training set trace should be selected to perform fit.")
         
         
         # Perform linear Regression defined in Eq. 17 of Pozzorini et al. PLOS Comp. Biol. 2015
         ####################################################################################################
         
-        print "\nPerform linear regression..."
+        print( "\nPerform linear regression...")
         XTX     = np.dot(np.transpose(X), X)
         XTX_inv = inv(XTX)
         XTY     = np.dot(np.transpose(X), Y)
@@ -512,7 +512,7 @@ class GIF(ThresholdModel) :
         ####################################################################################################
 
         var_explained_dV = 1.0 - np.mean((Y - np.dot(X,b))**2)/np.var(Y)
-        print "Percentage of variance explained (on dV/dt): %0.2f" % (var_explained_dV*100.0)
+        print( "Percentage of variance explained (on dV/dt): %0.2f" % (var_explained_dV*100.0))
 
         
         # Compute percentage of variance explained on V (see Eq. 26 in Pozzorini et al. PLOS Comp. Biol. 2105)
@@ -535,7 +535,7 @@ class GIF(ThresholdModel) :
                 
         var_explained_V = 1.0 - SSE / VAR
         
-        print "Percentage of variance explained (on V): %0.2f" % (var_explained_V*100.0)
+        print( "Percentage of variance explained (on V): %0.2f" % (var_explained_V*100.0))
                 
                     
     def fitSubthresholdDynamics_Build_Xmatrix_Yvector(self, trace, DT_beforeSpike=5.0):
@@ -594,7 +594,7 @@ class GIF(ThresholdModel) :
         experiment: Experiment object on which the model is fitted.
         """
 
-        print "\nGIF MODEL - Fit static threshold...\n"
+        print( "\nGIF MODEL - Fit static threshold...\n")
 
         
         self.setDt(experiment.dt)
@@ -646,7 +646,7 @@ class GIF(ThresholdModel) :
         experiment: Experiment object on which the model is fitted.
         """        
         
-        print "\nGIF MODEL - Fit dynamic threshold...\n"
+        print( "\nGIF MODEL - Fit dynamic threshold...\n")
         
         
         self.setDt(experiment.dt)
@@ -736,7 +736,7 @@ class GIF(ThresholdModel) :
         # Perform gradient ascent
         ################################################################################################
     
-        print "Maximize log-likelihood (bit/spks)..."
+        print( "Maximize log-likelihood (bit/spks)...")
                         
         beta = beta0
         old_L = 1
@@ -768,7 +768,7 @@ class GIF(ThresholdModel) :
             beta = beta - learning_rate*np.dot(inv(H),G)
                 
             if (i>0 and abs((L-old_L)/old_L) < stopCond) :              # If converged
-                print "\nConverged after %d iterations!\n" % (i+1)
+                print( "\nConverged after %d iterations!\n" % (i+1))
                 break
             
             old_L = L
@@ -779,12 +779,12 @@ class GIF(ThresholdModel) :
             reprint(L_norm)
             
             if math.isnan(L_norm):
-                print "Problem during gradient ascent. Optimizatino stopped."
+                print( "Problem during gradient ascent. Optimizatino stopped.")
                 break
     
         if (i==maxIter - 1) :                                           # If too many iterations
             
-            print "\nNot converged after %d iterations.\n" % (maxIter)
+            print( "\nNot converged after %d iterations.\n" % (maxIter))
 
 
         return beta
@@ -958,19 +958,19 @@ class GIF(ThresholdModel) :
         Print model parameters on terminal.
         """
 
-        print "\n-------------------------"        
-        print "GIF model parameters:"
-        print "-------------------------"
-        print "tau_m (ms):\t%0.3f"  % (self.C/self.gl)
-        print "R (MOhm):\t%0.3f"    % (1.0/self.gl)
-        print "C (nF):\t\t%0.3f"    % (self.C)
-        print "gl (nS):\t%0.6f"     % (self.gl)
-        print "El (mV):\t%0.3f"     % (self.El)
-        print "Tref (ms):\t%0.3f"   % (self.Tref)
-        print "Vr (mV):\t%0.3f"     % (self.Vr)     
-        print "Vt* (mV):\t%0.3f"    % (self.Vt_star)    
-        print "DV (mV):\t%0.3f"     % (self.DV)          
-        print "-------------------------\n"
+        print( "\n-------------------------")        
+        print( "GIF model parameters:")
+        print( "-------------------------")
+        print( "tau_m (ms):\t%0.3f"  % (self.C/self.gl))
+        print( "R (MOhm):\t%0.3f"    % (1.0/self.gl))
+        print( "C (nF):\t\t%0.3f"    % (self.C))
+        print( "gl (nS):\t%0.6f"     % (self.gl))
+        print( "El (mV):\t%0.3f"     % (self.El))
+        print( "Tref (ms):\t%0.3f"   % (self.Tref))
+        print( "Vr (mV):\t%0.3f"     % (self.Vr) )    
+        print( "Vt* (mV):\t%0.3f"    % (self.Vt_star))   
+        print( "DV (mV):\t%0.3f"     % (self.DV))          
+        print( "-------------------------\n")
                   
 
     @classmethod
@@ -982,9 +982,9 @@ class GIF(ThresholdModel) :
 
         # PRINT PARAMETERS        
 
-        print "\n#####################################"
-        print "GIF model comparison"
-        print "#####################################\n"
+        print( "\n#####################################")
+        print( "GIF model comparison")
+        print( "#####################################\n")
         
         cnt = 0
         for GIF in GIFs :
@@ -993,7 +993,7 @@ class GIF(ThresholdModel) :
             GIF.printParameters()
             cnt+=1
 
-        print "#####################################\n"                
+        print( "#####################################\n")                
                 
         # PLOT PARAMETERS
         plt.figure(facecolor='white', figsize=(9,8)) 
@@ -1248,7 +1248,7 @@ class GIF(ThresholdModel) :
             p = GIF.Vr
             p_all.append(p)
         
-        print "Mean Vr (mV): %0.1f" % (np.mean(p_all))  
+        print( "Mean Vr (mV): %0.1f" % (np.mean(p_all)))  
         
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('Vr (mV)')

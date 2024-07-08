@@ -134,14 +134,14 @@ myGIF_exp.fit(myExp, DT_beforeSpike=5.0)
 ############################################################################################################
 
 # Use the two models to predict spikes in the test set and evaluate Md*
-myPredictionGIF_rect = myExp.predictSpikes(myGIF_rect, nb_rep=5 00)
+myPredictionGIF_rect = myExp.predictSpikes(myGIF_rect, nb_rep=500)
 myPredictionGIF_exp  = myExp.predictSpikes(myGIF_exp, nb_rep=500)
 
 
-print "Model performance:"
-print "GIF rect: "
+print ("Model performance:")
+print ("GIF rect: ")
 myPredictionGIF_rect.computeMD_Kistler(4.0, 0.1) 
-print "GIF exp: "
+print ("GIF exp: ")
 myPredictionGIF_exp.computeMD_Kistler(4.0, 0.1)     
 
 

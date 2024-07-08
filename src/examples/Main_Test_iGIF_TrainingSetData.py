@@ -207,7 +207,7 @@ for i in np.arange(len(models)) :
     # predict spike times in test set
     prediction = experiment.predictSpikes(model, nb_rep=500)
     
-    print "\n Model: ", labels[i]
+    print ("\n Model: ", labels[i])
     
     # compute Md*
     

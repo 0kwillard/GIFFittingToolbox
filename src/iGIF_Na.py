@@ -270,9 +270,9 @@ class iGIF_Na(iGIF) :
         - doPlot         : if True plot the max-likelihood as a function of ki and Vi.
         """
              
-        print "\n################################"
-        print "# Fit iGIF_Na"
-        print "################################\n"
+        print( "\n################################")
+        print( "# Fit iGIF_Na")
+        print( "################################\n")
         
         # Three step procedure used for parameters extraction 
         
@@ -295,7 +295,7 @@ class iGIF_Na(iGIF) :
         
         # Fit a dynamic threshold using a initial condition the result obtained by fitting a static threshold
 
-        print "Fit dynamic threshold..."
+        print( "Fit dynamic threshold...")
                 
         #beta0_dynamicThreshold = np.concatenate( ( [1/self.DV], [-self.Vt_star/self.DV], [0], self.gamma.getCoefficients()/self.DV))        
         beta0_dynamicThreshold = np.concatenate( ( [1/self.DV], [-self.Vt_star/self.DV], [0], np.zeros(self.gamma.getNbOfBasisFunctions())))        
@@ -315,7 +315,7 @@ class iGIF_Na(iGIF) :
                 ki = ki_all[ki_i]
                 Vi = Vi_all[Vi_i]            
             
-                print "\nTest parameters: ki = %0.2f mV, Vi = %0.2f mV" % (ki, Vi)        
+                print( "\nTest parameters: ki = %0.2f mV, Vi = %0.2f mV" % (ki, Vi) )       
         
                 # Perform fit        
                 (beta_tmp, L_tmp) = self.maximizeLikelihood_dynamicThreshold(experiment, ki, Vi, beta0_dynamicThreshold)
@@ -324,7 +324,7 @@ class iGIF_Na(iGIF) :
         
                 if L_tmp > L_opt :
                     
-                    print "NEW OPTIMAL SOLUTION: LL = %0.5f (bit/spike)" % (L_tmp)
+                    print( "NEW OPTIMAL SOLUTION: LL = %0.5f (bit/spike)" % (L_tmp))
                     
                     L_opt    = L_tmp
                     beta_opt = beta_tmp 
@@ -351,9 +351,9 @@ class iGIF_Na(iGIF) :
             
             (ki_plot,Vi_plot) = np.meshgrid(Vi_all, ki_all)
 
-            print np.shape(ki_plot)
-            print np.shape(Vi_plot)
-            print np.shape(all_L)
+            print( np.shape(ki_plot))
+            print( np.shape(Vi_plot))
+            print( np.shape(all_L))
             
             plt.figure(facecolor='white', figsize=(6,6))
             
@@ -405,7 +405,7 @@ class iGIF_Na(iGIF) :
         
         # Perform gradient ascent
         
-        print "Maximize log-likelihood (bit/spks)..."
+        print( "Maximize log-likelihood (bit/spks)...")
                         
         beta = beta0
         old_L = 1
@@ -430,7 +430,7 @@ class iGIF_Na(iGIF) :
                 
             if (i>0 and abs((L-old_L)/old_L) < stopCond) :              # If converged
                 
-                print "\nConverged after %d iterations!\n" % (i+1)
+                print( "\nConverged after %d iterations!\n" % (i+1))
                 break
             
             old_L = L
@@ -442,7 +442,7 @@ class iGIF_Na(iGIF) :
             
         
         if (i==maxIter - 1) :                                           # If too many iterations
-            print "\nNot converged after %d iterations.\n" % (maxIter)
+            print( "\nNot converged after %d iterations.\n" % (maxIter))
         
         
         return (beta, L_norm)
@@ -598,24 +598,24 @@ class iGIF_Na(iGIF) :
   
     def printParameters(self):
 
-        print "\n-------------------------"        
-        print "iGIF_Na model parameters:"
-        print "-------------------------"
-        print "tau_m (ms):\t%0.3f"  % (self.C/self.gl)
-        print "R (MOhm):\t%0.3f"    % (1.0/self.gl)
-        print "C (nF):\t\t%0.3f"    % (self.C)
-        print "gl (nS):\t%0.3f"     % (self.gl)
-        print "El (mV):\t%0.3f"     % (self.El)
-        print "Tref (ms):\t%0.3f"   % (self.Tref)
-        print "Vr (mV):\t%0.3f"     % (self.Vr)     
-        print "Vt* (mV):\t%0.3f"    % (self.Vt_star)    
-        print "DV (mV):\t%0.3f"     % (self.DV)  
-        print "tau_theta (ms):\t%0.3f"   % (self.theta_tau)
-        print "ka (mV):\t%0.3f"    % (self.theta_ka)     
-        print "ki (mV):\t%0.3f"    % (self.theta_ki)    
-        print "Vi (mV):\t%0.3f"    % (self.theta_Vi) 
-        print "ka/ki (mV):\t%0.3f" % (self.theta_ka/self.theta_ki)                 
-        print "-------------------------\n"
+        print( "\n-------------------------")        
+        print( "iGIF_Na model parameters:")
+        print( "-------------------------")
+        print( "tau_m (ms):\t%0.3f"  % (self.C/self.gl))
+        print( "R (MOhm):\t%0.3f"    % (1.0/self.gl))
+        print( "C (nF):\t\t%0.3f"    % (self.C))
+        print( "gl (nS):\t%0.3f"     % (self.gl))
+        print( "El (mV):\t%0.3f"     % (self.El))
+        print( "Tref (ms):\t%0.3f"   % (self.Tref))
+        print( "Vr (mV):\t%0.3f"     % (self.Vr))     
+        print( "Vt* (mV):\t%0.3f"    % (self.Vt_star))    
+        print( "DV (mV):\t%0.3f"     % (self.DV))  
+        print( "tau_theta (ms):\t%0.3f"   % (self.theta_tau))
+        print( "ka (mV):\t%0.3f"    % (self.theta_ka))     
+        print( "ki (mV):\t%0.3f"    % (self.theta_ki))    
+        print( "Vi (mV):\t%0.3f"    % (self.theta_Vi)) 
+        print( "ka/ki (mV):\t%0.3f" % (self.theta_ka/self.theta_ki))                 
+        print( "-------------------------\n")
     
     
     def plotParameters(self) :
