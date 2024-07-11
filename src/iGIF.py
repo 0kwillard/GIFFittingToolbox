@@ -4,7 +4,6 @@ import numpy as np
 
 import abc
 
-from scipy import weave
 from numpy.linalg import inv
 
 from SpikingModel import *

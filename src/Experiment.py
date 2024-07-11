@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import cPickle as pkl
+import pickle as pkl
 
 from SpikeTrainComparator import *
 from SpikingModel import *
