@@ -3,7 +3,10 @@ import numpy as np
 
 from scipy.signal import fftconvolve
 
-
+'''
+Katy Willard
+As of 14-Aug-2024 I just returned an extra value (variance explained spikes)
+'''
 
 
 class SpikeTrainComparator :
@@ -250,7 +253,8 @@ class SpikeTrainComparator :
         
         print( "Percentage of variance explained: %0.1f" % (pct_variance_explained))
         
-        plt.show()
+        #plt.show()
+        return pct_variance_explained
         
         
         

@@ -16,14 +16,20 @@
 # More header data could be passed back if wished. For significace of ignored bytes see
 # the technical notes linked above. 
 
+'''
+Katy Willard
+As of 14-Aug-2024, I have just removed a line intended to import time.
+Secondly, I added str() to one line (search Katy). 
+'''
+
 import struct
-from time import clock
+#from time import clock
 import numpy
 
 def flatten(tup):
     out = ''
     for ch in tup:
-        out += ch
+        out += str(ch) # Katy added str()
     return out
 
 def read(filename):

@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from scipy import weave
-from scipy.weave import converters
 from numpy.linalg import inv
 
 from SpikingModel import *
@@ -12,6 +10,12 @@ from Filter_Rect_LogSpaced import *
 
 import Tools
 from Tools import reprint
+
+'''
+Katy Willard
+As of 14-Aug-2024, I have just removed lines intended to import weave
+The weave-dependent functions will not work.
+'''
 
 
 

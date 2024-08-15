@@ -2,7 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from scipy.optimize import leastsq
-from scipy import weave
+
+'''
+Katy Willard
+As of 14-Aug-2024, I have just removed lines intended to import weave
+The weave-dependent functions will not work.
+'''
 
 import sys
 

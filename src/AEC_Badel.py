@@ -9,8 +9,14 @@ from Filter_Rect_LogSpaced_AEC import *
 
 from numpy.linalg import *
 from random import sample
-from time import time
 
+'''
+Katy Willard
+Additions to the original code as of 14-Aug-2024:
+There is one addition to this code (search Katy) that I don't fully understand why works.
+Otherwise, I transfer the variable chosen_tref through to downstream functions.
+chosen_tref is used by my function detectSpikes_dVdt() added to Trace.py; this function is called in deconvolveTraces() below.
+'''
 
 class AEC_Badel(AEC) :
         
@@ -52,15 +58,17 @@ class AEC_Badel(AEC) :
     # ABSTRACT METHODS FROM AEC THAT HAVE TO BE IMPLEMENTED
     ##############################################################################################
     
-    def performAEC(self, experiment):
+    def performAEC(self, experiment, chosen_tref):
 
         print ("\nPERFORM ACTIVE ELECTRODE COMPENSATION (Badel method)...")
 
         # Estimate electrode filter using the AEC traces of a given Experiment
-        self.computeElectrodeFilter(experiment)
+        status = self.computeElectrodeFilter(experiment)
 
         # Compensate voltage traces in a given Experiment    
-        self.compensateAllTraces(experiment)
+        self.compensateAllTraces(experiment, chosen_tref)
+
+        return status
         
         
 
@@ -119,7 +127,7 @@ class AEC_Badel(AEC) :
             ############################################
     
             # Resample npPoints datapoints from ROI and define X matrix and Y vector for bootstrap regression
-            ROI_selection_sampled = sample(ROI_selection, nbPoints)
+            ROI_selection_sampled = sample(list(ROI_selection), nbPoints) # Katy added list() here, and doesn't know why
             Y = np.array(V_dot[ROI_selection_sampled])
             X_tmp = X[ROI_selection_sampled, :]    
                     
@@ -157,19 +165,25 @@ class AEC_Badel(AEC) :
 
             # Store the bootstrap repetition
             self.K_e_all.append(Ke_tmp)
+            if Ke_tmp.computeIntegral(dt) > 100.0 or Ke_tmp.computeIntegral(dt) < -100.0:
+                status = 'Failed'
+                return status
             print( "Repetition ", (rep+1), " R_e (MOhm) = %0.2f" % (Ke_tmp.computeIntegral(dt)))
+
 
         # Compute final filter by averaging the filters obtained via bootstrap 
         self.K_opt = Filter.averageFilters(self.K_opt_all)
         self.K_e = Filter.averageFilters(self.K_e_all)   
         
-        print( "Done!")     
+        print( "Done!") 
+        status = 'Successful' 
+        return status
 
 
     ##############################################################################################    
     # FUCTIONS TO APPLY AEC TO ALL TRACES IN THE EXPERIMENT
     ##############################################################################################    
-    def compensateAllTraces(self, expr) :
+    def compensateAllTraces(self, expr, chosen_tref) :
         
         """
         Apply AEC to all traces (i.e., AEC traces, traning set traces and test set traces) contained in Experiment expr.
@@ -179,21 +193,21 @@ class AEC_Badel(AEC) :
         print( "\nCompensate experiment")
         
         print( "AEC trace...")
-        self.deconvolveTrace(expr.AEC_trace)
+        self.deconvolveTrace(expr.AEC_trace, chosen_tref)
 
         print( "Training set...")      
         for tr in expr.trainingset_traces :
-            self.deconvolveTrace(tr)
+            self.deconvolveTrace(tr, chosen_tref)
          
         print( "Test set...")  
         for tr in expr.testset_traces :
-            self.deconvolveTrace(tr)         
+            self.deconvolveTrace(tr, chosen_tref)         
         
         print("Done!")
          
          
          
-    def deconvolveTrace(self, trace):
+    def deconvolveTrace(self, trace, chosen_tref):
         
         """
         Estimate membrane potential V from recorded signal V_rec according to Eq. 15 in Pozzorini et al. PLOS Comp. Biol. 2015
@@ -206,7 +220,7 @@ class AEC_Badel(AEC) :
         trace.V = V_aec
         trace.AEC_flag = True
         
-        trace.detectSpikes()
+        trace.detectSpikes_dVdt(ref=chosen_tref)
    
     
 

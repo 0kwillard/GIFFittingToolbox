@@ -2,12 +2,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from scipy.signal import fftconvolve
-from scipy import weave
-from scipy.weave import converters
 
 import Tools
 
 from Filter import *
+
+'''
+Katy Willard
+As of 14-Aug-2024, I have just removed lines intended to import weave.
+The weave-dependent functions will not work.
+'''
 
 
 

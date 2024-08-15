@@ -3,6 +3,13 @@ import numpy as np
 from AEC import *
 from Experiment import *
 
+'''
+Katy Willard
+Additions to the original code as of 14-Aug-2024:
+I pass in the argument chosen_tref through this code,
+ for use in my new detectSpikes_dVdt method.
+This new method is in Trace.py.
+'''
 
 class AEC_Dummy(AEC) :
 
@@ -11,7 +18,7 @@ class AEC_Dummy(AEC) :
     The membrane potential V is therefore assumed to be equal to V_rec. 
     """
     
-    def performAEC(self, experiment):
+    def performAEC(self, experiment, chosen_tref):
 
         print ("\nDO NOT PERFORM ACTIVE ELECTRODE COMPENSATION...")
 
@@ -24,12 +31,12 @@ class AEC_Dummy(AEC) :
         for tr in experiment.trainingset_traces :
             tr.V        = tr.V_rec 
             tr.AEC_flag = True 
-            tr.detectSpikes()   
+            tr.detectSpikes_dVdt(chosen_tref)   
                        
         for tr in experiment.testset_traces :
             tr.V        = tr.V_rec 
             tr.AEC_flag = True   
-            tr.detectSpikes()   
+            tr.detectSpikes_dVdt(chosen_tref)   
                  
         print ("Done!")
     

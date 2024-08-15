@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from scipy import weave
 from numpy.linalg import inv
 
 from ThresholdModel import *
@@ -11,6 +10,11 @@ from GIF import *
 
 from Tools import reprint
 
+'''
+Katy Willard
+As of 14-Aug-2024, I have just removed lines intended to import weave
+The weave-dependent functions will not work.
+'''
 
 class gGIF(GIF) :
 

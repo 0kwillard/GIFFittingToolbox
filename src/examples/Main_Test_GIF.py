@@ -1,7 +1,9 @@
 import os
 import sys
+from scipy.io import loadmat
 
 main_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+print(f'{main_folder=}')
 
 # Function to add a directory and all its subdirectories to sys.path
 def add_subdirectories_to_syspath(base_path):
@@ -9,151 +11,177 @@ def add_subdirectories_to_syspath(base_path):
         if root not in sys.path:
             sys.path.append(root)
 
-# Add all subdirectories to sys.path
 add_subdirectories_to_syspath(main_folder)
 
 from Experiment import *
 from AEC_Badel import *
+from AEC_Dummy import * 
 from GIF import *
 from Filter_Rect_LogSpaced import *
 from Filter_Rect_LinSpaced import *
 
-import matplotlib.pyplot as plt
-
-
 """
+Katy Willard
 This file shows how to fit a GIF to some experimental data.
-More instructions are provided on the website. 
+As of 14-Aug-2024, this version also runs my cells and is committed to GitHub (KJW).
+The AEC has been turned off by default, and has a new spike detection method is applied to the real data which uses dV/dt.
+Some optional elements of the code have been removed for simplicity.
+It can save both the model and the experiment automatically, and returns values that indicate the quality of fit.
 """
 
 ############################################################################################################
 # STEP 1: LOAD EXPERIMENTAL DATA
 ############################################################################################################
-myExp = Experiment('Experiment 1', 0.1)
-
-PATH = '../../data/gif_test/'
-
-# Load AEC data
-myExp.setAECTrace(PATH + 'Cell3_Ger1Elec_ch2_1007.ibw', 1.0, PATH + 'Cell3_Ger1Elec_ch3_1007.ibw', 1.0, 10000.0, FILETYPE='Igor')
-
-# Load training set data
-myExp.addTrainingSetTrace(PATH + 'Cell3_Ger1Training_ch2_1008.ibw', 1.0, PATH + 'Cell3_Ger1Training_ch3_1008.ibw', 1.0, 120000.0, FILETYPE='Igor')
-
-# Load test set data
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1009.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1009.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1010.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1010.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1011.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1011.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1012.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1012.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1013.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1013.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1014.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1014.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1015.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1015.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1016.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1016.ibw', 1.0, 20000.0, FILETYPE='Igor')
-myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1017.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1017.ibw', 1.0, 20000.0, FILETYPE='Igor')
-
-# Plot data
-#myExp.plotTrainingSet()
-#myExp.plotTestSet()
 
 
-############################################################################################################
-# STEP 2: ACTIVE ELECTRODE COMPENSATION
-############################################################################################################
+def main_code(CELL, version, chosen_tref = 1, plots=False, apply_AEC=False, save = True):
 
-# Create new object to perform AEC
-myAEC = AEC_Badel(myExp.dt)
+    # The example cell validates my code adaptations.
+    if CELL == 'example':
+        dt_from_data = 0.1 #data is sampled at 10 kHz
+        myExp = Experiment(CELL, dt_from_data) # takes the time step dt. 
+        PATH = main_folder + '/data/gif_test/'
+        print(f'{PATH=}')
 
-# Define metaparametres
-myAEC.K_opt.setMetaParameters(length=150.0, binsize_lb=myExp.dt, binsize_ub=2.0, slope=30.0, clamp_period=1.0)
-myAEC.p_expFitRange = [3.0,150.0]  
-myAEC.p_nbRep = 15     
+        # Load AEC data
+        myExp.setAECTrace(PATH + 'Cell3_Ger1Elec_ch2_1007.ibw', 1.0, PATH + 'Cell3_Ger1Elec_ch3_1007.ibw', 1.0, 10000.0, FILETYPE='Igor')
 
-# Assign myAEC to myExp and compensate the voltage recordings
-myExp.setAEC(myAEC)  
-myExp.performAEC()  
+        # Load training set data
+        myExp.addTrainingSetTrace(PATH + 'Cell3_Ger1Training_ch2_1008.ibw', 1.0, PATH + 'Cell3_Ger1Training_ch3_1008.ibw', 1.0, 120000.0, FILETYPE='Igor')
 
-# Plot AEC filters (Kopt and Ke)
-myAEC.plotKopt()
-myAEC.plotKe()
+        # Load test set data
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1009.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1009.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1010.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1010.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1011.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1011.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1012.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1012.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1013.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1013.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1014.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1014.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1015.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1015.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1016.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1016.ibw', 1.0, 20000.0, FILETYPE='Igor')
+        myExp.addTestSetTrace(PATH + 'Cell3_Ger1Test_ch2_1017.ibw', 1.0, PATH + 'Cell3_Ger1Test_ch3_1017.ibw', 1.0, 20000.0, FILETYPE='Igor')
+    
+    # My own data
+    else:
 
-# Plot training and test set
-myExp.plotTrainingSet()
-myExp.plotTestSet()
+        dt_from_data = 0.25 #data is sampled at 4 kHz
+        myExp = Experiment(CELL, dt_from_data) # takes the time step dt. 
+        
+        PATH = main_folder + '/data/our_data/'
+        print(f'{PATH=}')
+        #PATH = '/mnt/multiverse/homes/katy/GIF_Toolbox/Attempt 1/Reformatted data new window/' 
 
+        # Extract data from .mat files
+        mat_contents = loadmat(PATH + CELL + '-current_1_10.mat'); current_1_10 = mat_contents['current_1_10'].squeeze()
+        mat_contents = loadmat(PATH + CELL + '-current_2_10.mat'); current_2_10 = mat_contents['current_2_10'].squeeze()
+        mat_contents = loadmat(PATH + CELL + '-current_7_10.mat'); current_7_10 = mat_contents['current_7_10'].squeeze()
+        mat_contents = loadmat(PATH + CELL + '-voltage_1_10.mat'); voltage_1_10 = mat_contents['voltage_1_10'].squeeze()
+        mat_contents = loadmat(PATH + CELL + '-voltage_2_10.mat'); voltage_2_10 = mat_contents['voltage_2_10'].squeeze()
+        mat_contents = loadmat(PATH + CELL + '-voltage_7_10.mat'); voltage_7_10 = mat_contents['voltage_7_10'].squeeze()
 
-############################################################################################################
-# STEP 3: FIT GIF MODEL TO DATA
-############################################################################################################
+        # Load AEC data
+        myExp.setAECTrace(voltage_1_10, 10**-3, current_1_10, 10**-12, len(current_1_10)/4, FILETYPE='Array')
 
-# Create a new object GIF 
-myGIF = GIF(0.1)
+        # Load training set data
+        myExp.addTrainingSetTrace(voltage_7_10, 10**-3, current_7_10, 10**-12, len(current_7_10)/4, FILETYPE='Array')
 
-# Define parameters
-myGIF.Tref = 4.0  
-
-myGIF.eta = Filter_Rect_LogSpaced()
-myGIF.eta.setMetaParameters(length=500.0, binsize_lb=2.0, binsize_ub=1000.0, slope=4.5)
-
-
-myGIF.gamma = Filter_Rect_LogSpaced()
-myGIF.gamma.setMetaParameters(length=500.0, binsize_lb=5.0, binsize_ub=1000.0, slope=5.0)
-
-# Define the ROI of the training set to be used for the fit (in this example we will use only the first 100 s)
-myExp.trainingset_traces[0].setROI([[0,100000.0]])
-
-# To visualize the training set and the ROI call again
-myExp.plotTrainingSet()
-
-# Perform the fit
-myGIF.fit(myExp, DT_beforeSpike=5.0)
-
-# Plot the model parameters
-myGIF.printParameters()
-myGIF.plotParameters()   
-
-## Save the model
-#myGIF.save('./myGIF.pck')
-
-
-############################################################################################################
-# STEP 3A (OPTIONAL): PLAY A BIT WITH THE FITTED MODEL
-############################################################################################################
-
-## Reload the model
-#myGIF = GIF.load('./myGIF.pck')
-#
-## Generate OU process with temporal correlation 3 ms and mean modulated by a sinusoildal function of 1 Hz
-#I_OU = Tools.generateOUprocess_sinMean(f=1.0, T=5000.0, tau=3.0, mu=0.3, delta_mu=0.5, sigma=0.1, dt=0.1)
-#
-## Simulate the model with the I_OU current. Use the reversal potential El as initial condition (i.e., V(t=0)=El)
-#(time, V, I_a, V_t, S) = myGIF.simulate(I_OU, myGIF.El)
-#
-## Plot the results of the simulation
-#plt.figure(figsize=(14,5), facecolor='white')
-#plt.subplot(2,1,1)
-#plt.plot(time, I_OU, 'gray')
-#plt.ylabel('I (nA)')
-#plt.subplot(2,1,2)
-#plt.plot(time, V,'black', label='V')
-#plt.plot(time, V_t,'red', label='V threshold')
-#plt.ylabel('V (mV)')
-#plt.xlabel('Time (ms)')
-#plt.legend()
-#plt.show()
+        # Load test set data
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
+        myExp.addTestSetTrace(voltage_2_10, 10**-3, current_2_10, 10**-12, len(current_2_10)/4, FILETYPE='Array')
 
 
+    #Plot data
+    if plots:
+        myExp.plotTrainingSet()
+        myExp.plotTestSet()
 
-############################################################################################################
-# STEP 4: EVALUATE THE GIF MODEL PERFORMANCE (USING MD*)
-############################################################################################################
+    ############################################################################################################
+    # STEP 2: ACTIVE ELECTRODE COMPENSATION
+    ############################################################################################################
 
-# Use the myGIF model to predict the spiking data of the test data set in myExp
-myPrediction = myExp.predictSpikes(myGIF, nb_rep=500)
+    if apply_AEC:
+        # Create new object to perform AEC
+        myAEC = AEC_Badel(myExp.dt)
 
-# Compute Md* with a temporal precision of +/- 4ms
-Md = myPrediction.computeMD_Kistler(4.0, 0.1)    
+        # Define metaparametres
+        myAEC.K_opt.setMetaParameters(length=150.0, binsize_lb=myExp.dt, binsize_ub=2.0, slope=30.0, clamp_period=1.0)
+        myAEC.p_expFitRange = [3.0,150.0]  
+        myAEC.p_nbRep = 15     
 
-# Plot data vs model prediction
-myPrediction.plotRaster(delta=1000.0) 
+        # Assign myAEC to myExp and compensate the voltage recordings
+        myExp.setAEC(myAEC)  
+        status = myExp.performAEC(chosen_tref)  
+        print (status) 
+
+
+    if apply_AEC == False or status == 'Failed':
+        myAEC = AEC_Dummy()
+        myExp.setAEC(myAEC)  
+        myExp.performAEC(chosen_tref)
+    
+
+    # Plot AEC filters (Kopt and Ke)
+    if plots and apply_AEC and status == 'Successful':       
+        myAEC.plotKopt()
+        myAEC.plotKe()
+
+    # Plot training and test set
+    if plots:
+        myExp.plotTrainingSet()
+        myExp.plotTestSet()
+
+    ############################################################################################################
+    # STEP 3: FIT GIF MODEL TO DATA
+    ############################################################################################################
+
+    # Create a new object GIF 
+    myGIF = GIF(dt_from_data)
+
+    # Define parameters
+    myGIF.Tref = chosen_tref   
+
+    myGIF.eta = Filter_Rect_LogSpaced()
+    myGIF.eta.setMetaParameters(length=500.0, binsize_lb=2.0, binsize_ub=1000.0, slope=4.5)
+
+
+    myGIF.gamma = Filter_Rect_LogSpaced()
+    myGIF.gamma.setMetaParameters(length=500.0, binsize_lb=5.0, binsize_ub=1000.0, slope=5.0)
+
+    # Perform the fit
+    var_explained_dV, var_explained_V = myGIF.fit(myExp, plots, DT_beforeSpike=5.0)
+
+    # Plot the model parameters
+    # myGIF.printParameters()
+    if plots:   
+        myGIF.plotParameters()   
+
+
+    ############################################################################################################
+    # STEP 4: EVALUATE THE GIF MODEL PERFORMANCE (USING MD*)
+    ############################################################################################################
+
+    # Use the myGIF model to predict the spiking data of the test data set in myExp
+    myPrediction = myExp.predictSpikes(myGIF, nb_rep=500)
+
+    # Compute Md* with a temporal precision of +/- 4ms
+    Md = myPrediction.computeMD_Kistler(4.0, dt_from_data)    
+
+    # Plot data vs model prediction  
+    percent_variance = myPrediction.plotRaster(delta=1000.0) 
+
+    # Save the model and the parameters used in the fitting experiment
+    if save:
+        myGIF.save('./GIFFittingToolbox/Saved_fits/' + version + '/' + CELL + '.pkl')
+        myExp.save('./GIFFittingToolbox/Saved_fits/' + version + '/' + CELL + '_experiment.pkl')
+
+    return Md, percent_variance, var_explained_dV, var_explained_V
+
 
 
 

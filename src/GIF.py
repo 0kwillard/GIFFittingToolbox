@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import numpy as np
 
-from scipy import weave
+#from scipy import weave
 from numpy.linalg import inv
 
 from ThresholdModel import *
@@ -12,7 +12,16 @@ from Tools import reprint
 from numpy import nan, NaN
 
 import math
+from cffi import FFI
 
+import c_codes
+
+'''
+Katy Willard
+As of 14-Aug-2024, I have implemented the C code that used to rely on weave, 
+added some extra print statements to the GIF.fit function, and returned some 
+extra parameters for indicating the quality of the fit.
+'''
 
 class GIF(ThresholdModel) :
 
@@ -170,73 +179,13 @@ class GIF(ThresholdModel) :
  
         # Set initial condition
         V[0] = V0
-         
-        code =  """
-                #include <math.h>
-                
-                int   T_ind      = int(p_T);                
-                float dt         = float(p_dt); 
-                
-                float gl         = float(p_gl);
-                float C          = float(p_C);
-                float El         = float(p_El);
-                float Vr         = float(p_Vr);
-                int   Tref_ind   = int(float(p_Tref)/dt);
-                float Vt_star    = float(p_Vt_star);
-                float DeltaV     = float(p_DV);
-                float lambda0    = float(p_lambda0);
-           
-                int eta_l        = int(p_eta_l);
-                int gamma_l      = int(p_gamma_l);
-                
-                                                  
-                float rand_max  = float(RAND_MAX); 
-                float p_dontspike = 0.0 ;
-                float lambda = 0.0 ;            
-                float r = 0.0;
-                
-                                                
-                for (int t=0; t<T_ind-1; t++) {
-    
-    
-                    // INTEGRATE VOLTAGE
-                    V[t+1] = V[t] + dt/C*( -gl*(V[t] - El) + I[t] - eta_sum[t] );
-               
-               
-                    // COMPUTE PROBABILITY OF EMITTING ACTION POTENTIAL
-                    lambda = lambda0*exp( (V[t+1]-Vt_star-gamma_sum[t])/DeltaV );
-                    p_dontspike = exp(-lambda*(dt/1000.0));                                  // since lambda0 is in Hz, dt must also be in Hz (this is why dt/1000.0)
-                          
-                          
-                    // PRODUCE SPIKE STOCHASTICALLY
-                    r = rand()/rand_max;
-                    if (r > p_dontspike) {
-                                        
-                        if (t+1 < T_ind-1)                
-                            spks[t+1] = 1.0; 
-                        
-                        t = t + Tref_ind;    
-                        
-                        if (t+1 < T_ind-1) 
-                            V[t+1] = Vr;
-                        
-                        
-                        // UPDATE ADAPTATION PROCESSES     
-                        for(int j=0; j<eta_l; j++) 
-                            eta_sum[t+1+j] += p_eta[j]; 
-                        
-                        for(int j=0; j<gamma_l; j++) 
-                            gamma_sum[t+1+j] += p_gamma[j] ;  
-                        
-                    }
-               
-                }
-                
-                """
- 
-        vars = [ 'p_T','p_dt','p_gl','p_C','p_El','p_Vr','p_Tref','p_Vt_star','p_DV','p_lambda0','V','I','p_eta','p_eta_l','eta_sum','p_gamma','gamma_sum','p_gamma_l','spks' ]
-        
-        v = weave.inline(code, vars)
+
+        v  = c_codes.GIF_simulate(p_eta, p_gamma, V, I, 
+                                  spks, eta_sum, gamma_sum, int(p_T), 
+                                  float(p_dt), float(p_gl), float(p_C), 
+                                  float(p_El), float(p_Vr), int(float(p_Tref)/p_dt), 
+                                  float(p_Vt_star),float(p_DV), float(p_lambda0), 
+                                  int(p_eta_l), int(p_gamma_l))                                          
 
         time = np.arange(p_T)*self.dt
         
@@ -291,7 +240,7 @@ class GIF(ThresholdModel) :
 
 
         # Compute adaptation current (sum of eta triggered at spike times in spks) 
-        eta_sum  = np.array(np.zeros(p_T + 1.1*p_eta_l + p_Tref_i), dtype="double")   
+        eta_sum  = np.array(np.zeros(int(p_T + 1.1*p_eta_l + p_Tref_i)), dtype="double")  # Katy added int() 
         
         for s in spks_i :
             eta_sum[s + 1 + p_Tref_i  : s + 1 + p_Tref_i + p_eta_l] += p_eta
@@ -301,47 +250,10 @@ class GIF(ThresholdModel) :
    
         # Set initial condition
         V[0] = V0
-        
-    
-        code = """ 
-                #include <math.h>
-                
-                int   T_ind      = int(p_T);                
-                float dt         = float(p_dt); 
-                
-                float gl         = float(p_gl);
-                float C          = float(p_C);
-                float El         = float(p_El);
-                float Vr         = float(p_Vr);
-                int   Tref_ind   = int(float(p_Tref)/dt);
 
-
-                int next_spike = spks_i[0] + Tref_ind;
-                int spks_cnt = 0;
- 
-                                                                       
-                for (int t=0; t<T_ind-1; t++) {
-    
-    
-                    // INTEGRATE VOLTAGE
-                    V[t+1] = V[t] + dt/C*( -gl*(V[t] - El) + I[t] - eta_sum[t] );
-               
-               
-                    if ( t == next_spike ) {
-                        spks_cnt = spks_cnt + 1;
-                        next_spike = spks_i[spks_cnt] + Tref_ind;
-                        V[t-1] = 0 ;                  
-                        V[t] = Vr ;
-                        t=t-1;           
-                    }
-               
-                }
-        
-                """
- 
-        vars = [ 'p_T','p_dt','p_gl','p_C','p_El','p_Vr','p_Tref','V','I','eta_sum','spks_i' ]
-        
-        v = weave.inline(code, vars)
+        c_codes.GIF_simulateDeterministic_forceSpikes(V, I, spks, spks_i, eta_sum,p_T,
+                                                      p_dt, p_gl, p_C, p_El, p_Vr,
+                                                      int(float(p_Tref)/p_dt))
 
         time = np.arange(p_T)*self.dt
         eta_sum = eta_sum[:p_T]     
@@ -354,7 +266,7 @@ class GIF(ThresholdModel) :
     ########################################################################################################  
       
          
-    def fit(self, experiment, DT_beforeSpike = 5.0):
+    def fit(self, experiment, plots, DT_beforeSpike = 5.0):
         
         """
         Fit the GIF model on experimental data.
@@ -369,14 +281,15 @@ class GIF(ThresholdModel) :
         print( "# Fit GIF")
         print( "################################\n")
         
-        self.fitVoltageReset(experiment, self.Tref, do_plot=False)
-        
-        self.fitSubthresholdDynamics(experiment, DT_beforeSpike=DT_beforeSpike)
-        
+        print('Starting fitVoltageReset')
+        self.fitVoltageReset(experiment, self.Tref, do_plot=plots)
+        print('Starting fitSubthresholdDynamics')
+        var_explained_dV, var_explained_V = self.fitSubthresholdDynamics(experiment, DT_beforeSpike=DT_beforeSpike)
+        print('Starting fitStaticThreshold')
         self.fitStaticThreshold(experiment)
-
+        print('Starting fitThresholdDynamics')
         self.fitThresholdDynamics(experiment)
-
+        return (var_explained_dV, var_explained_V)
 
 
     ########################################################################################################
@@ -384,7 +297,7 @@ class GIF(ThresholdModel) :
     ########################################################################################################
 
 
-    def fitVoltageReset(self, experiment, Tref, do_plot=False):
+    def fitVoltageReset(self, experiment, Tref, do_plot):
         
         """
         Implement Step 1 of the fitting procedure introduced in Pozzorini et al. PLOS Comb. Biol. 2015
@@ -536,6 +449,7 @@ class GIF(ThresholdModel) :
         var_explained_V = 1.0 - SSE / VAR
         
         print( "Percentage of variance explained (on V): %0.2f" % (var_explained_V*100.0))
+        return (var_explained_dV*100.0, var_explained_V*100.0)
                 
                     
     def fitSubthresholdDynamics_Build_Xmatrix_Yvector(self, trace, DT_beforeSpike=5.0):

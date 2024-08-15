@@ -5,6 +5,11 @@ import pickle as pkl
 
 import Tools
 
+'''
+Katy Willard
+As of 14-Aug-2024, I updated the saving and loading methods.
+'''
+
 
 class SpikingModel :
 
@@ -68,8 +73,9 @@ class SpikingModel :
     ############################################################################################
     def save(self, path):
           
-        print( "Saving: " + path + "...")        
-        f = open(path,'w')
+        print( "Saving: " + path + "...")   
+
+        f = open(path,'wb')
         pkl.dump(self, f)
         print( "Done!")
         
@@ -79,7 +85,7 @@ class SpikingModel :
         
         print( "Load spiking model: " + path + "...")        
       
-        f = open(path,'r')
+        f = open(path,'rb')
         model = pkl.load(f)
     
         print( "Done!" )

@@ -1,9 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from scipy import weave
-
 import ReadIBW
+
+'''
+Katy Willard
+As of 14-Aug-2024, I have removed lines intended to import weave
+The weave-dependent functions will not work.
+
+I also added a new function: detectSpikes_dVdt(), 
+which intended to match Randy's method for finding spikes using dV/dt.
+This is callled in step 2 of the main code in AEC or AEC dummy codes,
+to detect spikes in my real voltage traces.
+
+In addition, I commented functions I was scared would get called accidently.
+
+'''
 
 
 
@@ -185,77 +197,97 @@ class Trace :
     # FUNCTIONS ASSOCIATED TO SPIKES IN THE TRACE
     #################################################################################################
 
-    def detectSpikes_python(self, threshold=0.0, ref=3.0):
+    # def detectSpikes_python(self, threshold=0.0, ref=3.0):
         
-        """
-        Detect action potentials by threshold crossing (parameter threshold, mV) from below (i.e. with dV/dt>0).
-        To avoid multiple detection of same spike due to noise, use an 'absolute refractory period' ref, in ms.
-        """ 
+    #     """
+    #     Detect action potentials by threshold crossing (parameter threshold, mV) from below (i.e. with dV/dt>0).
+    #     To avoid multiple detection of same spike due to noise, use an 'absolute refractory period' ref, in ms.
+    #     """ 
         
+    #     self.spks = []
+    #     ref_ind = int(ref/self.dt)
+    #     t=0
+    #     while (t<len(self.V)-1) :
+            
+    #         if (self.V[t] >= threshold and self.V[t-1] <= threshold) :
+    #             self.spks.append(t)
+    #             t+=ref_ind
+    #         t+=1
+                        
+    #     self.spks = np.array(self.spks)
+    #     self.spks_flag = True
+
+    def detectSpikes_dVdt(self, ref, threshold=1.0):
+
+        '''
+        Written by Katy and intended to match Randy's method for finding spikes using dV/dt,
+        Given the size of the current injections I use (especially relative to the original intended use for this code),
+        this change could be really important.
+        '''
+
         self.spks = []
         ref_ind = int(ref/self.dt)
         t=0
-        while (t<len(self.V)-1) :
-            
-            if (self.V[t] >= threshold and self.V[t-1] <= threshold) :
+        diff_V = np.diff(self.V)
+        while (t<len(diff_V)-1) :
+            if (diff_V[t] >= threshold and diff_V[t-1] <= threshold) :
                 self.spks.append(t)
                 t+=ref_ind
             t+=1
-                        
+        
         self.spks = np.array(self.spks)
         self.spks_flag = True
 
-
-    def detectSpikes(self, threshold=0.0, ref=3.0):
+    # def detectSpikes(self, threshold=0.0, ref=3.0):
         
-        """
-        Detect action potentials by threshold crossing (parameter threshold, mV) from below (i.e. with dV/dt>0).
-        To avoid multiple detection of same spike due to noise, use an 'absolute refractory period' ref, in ms.
-        Code implemented in C.
-        """ 
+    #     """
+    #     Detect action potentials by threshold crossing (parameter threshold, mV) from below (i.e. with dV/dt>0).
+    #     To avoid multiple detection of same spike due to noise, use an 'absolute refractory period' ref, in ms.
+    #     Code implemented in C.
+    #     """ 
         
-        # Define parameters
-        p_T_i     = int(np.round(self.T/self.dt))
-        p_ref_ind = int(np.round(ref/self.dt))
-        p_threshold = threshold
+    #     # Define parameters
+    #     p_T_i     = int(np.round(self.T/self.dt))
+    #     p_ref_ind = int(np.round(ref/self.dt))
+    #     p_threshold = threshold
 
-        # Define vectors
-        V  =   np.array(self.V, dtype='double')
+    #     # Define vectors
+    #     V  =   np.array(self.V, dtype='double')
 
                 
-        spike_train = np.zeros(p_T_i)
-        spike_train = np.array(spike_train, dtype='double')
+    #     spike_train = np.zeros(p_T_i)
+    #     spike_train = np.array(spike_train, dtype='double')
         
                 
-        code =  """
-                #include <math.h>
+    #     code =  """
+    #             #include <math.h>
                 
-                int T_i = int(p_T_i)-1;                
-                int ref_ind = int(p_ref_ind);   
-                float threshold = p_threshold;
+    #             int T_i = int(p_T_i)-1;                
+    #             int ref_ind = int(p_ref_ind);   
+    #             float threshold = p_threshold;
             
-                int t = 0;
+    #             int t = 0;
                                                                 
-                while (t < T_i) {
+    #             while (t < T_i) {
                     
-                    if (V[t] >= threshold && V[t-1] < threshold) {
-                        spike_train[t] = 1.0;
-                        t += ref_ind;
-                    }
+    #                 if (V[t] >= threshold && V[t-1] < threshold) {
+    #                     spike_train[t] = 1.0;
+    #                     t += ref_ind;
+    #                 }
                     
-                    t++;
+    #                 t++;
                
-                }  
-                """
+    #             }  
+    #             """
  
-        vars = [ 'p_T_i', 'p_ref_ind', 'p_threshold', 'V', 'spike_train' ]
+    #     vars = [ 'p_T_i', 'p_ref_ind', 'p_threshold', 'V', 'spike_train' ]
         
-        v = weave.inline(code, vars)
+    #     v = weave.inline(code, vars)
 
-        spks_ind = np.where(spike_train==1.0)[0]
+    #     spks_ind = np.where(spike_train==1.0)[0]
 
-        self.spks = np.array(spks_ind)
-        self.spks_flag = True
+    #     self.spks = np.array(spks_ind)
+    #     self.spks_flag = True
 
 
 

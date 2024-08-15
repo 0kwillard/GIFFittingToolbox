@@ -6,6 +6,12 @@ from SpikingModel import *
 from Trace import *
 from AEC_Dummy import *
 
+'''
+Katy Willard
+As of 14-Aug-2024, I updated the save statements, and added a 'status'
+variable to report whether the AEC was successful (when used).
+I also commented some functions that I was worried were called when I wasn't expecting them.
+'''
 
 class Experiment :
     
@@ -48,9 +54,9 @@ class Experiment :
 
         # Parameters used to define spike times
         
-        self.spikeDetection_threshold    = 0.0  # mV, voltage threshold used to detect spikes
+        #self.spikeDetection_threshold    = 0.0  # mV, voltage threshold used to detect spikes
         
-        self.spikeDetection_ref          = 3.0  # ms, absolute refractory period used for spike detection to avoid double counting of spikes
+        #self.spikeDetection_ref          = 3.0  # ms, absolute refractory period used for spike detection to avoid double counting of spikes
 
 
 
@@ -138,9 +144,11 @@ class Experiment :
         return self.AEC    
              
              
-    def performAEC(self):
+    def performAEC(self, chosen_tref):
 
-        self.AEC.performAEC(self)
+        status = self.AEC.performAEC(self, chosen_tref)
+
+        return status
     
     
     ############################################################################################
@@ -152,10 +160,9 @@ class Experiment :
         Save experiment.
         """
         
-        filename = path + "/Experiment_" + self.name + '.pkl'
-        
-        print ("Saving: " + filename + "...")       
-        f = open(filename,'w')
+        print ("Saving: " + path + "...")   
+
+        f = open(path,'wb')
         pkl.dump(self, f)
         print ("Done!")
         
@@ -169,7 +176,7 @@ class Experiment :
         
         print ("Load experiment: " + filename + "...")        
       
-        f = open(filename,'r')
+        f = open(filename,'rb')
         expr = pkl.load(f)
     
         print ("Done!") 
@@ -214,7 +221,10 @@ class Experiment :
         print ("Predict spike times...")
         
         for rep in np.arange(nb_rep) : 
-            print("Progress: %2.1f %% \r" % (100*(rep+1)/nb_rep))
+            
+            if (rep + 1) % (nb_rep // 10) == 0:
+                print("Progress: %2.1f %% \r" % (100 * (rep + 1) / nb_rep))
+
             spks_times = spiking_model.simulateSpikingResponse(I_test, self.dt)
             all_spks_times_prediction.append(spks_times)
         
@@ -229,52 +239,52 @@ class Experiment :
     ############################################################################################
     # AUXILIARY FUNCTIONS
     ############################################################################################            
-    def detectSpikes_python(self, threshold=0.0, ref=3.0):
+    # def detectSpikes_python(self, threshold=0.0, ref=3.0):
 
-        """
-        Extract spike times form all experimental traces.
-        Python implementation (to speed up, use the function detectSpikes implemented in C).
-        """
+    #     """
+    #     Extract spike times form all experimental traces.
+    #     Python implementation (to speed up, use the function detectSpikes implemented in C).
+    #     """
 
-        print ("Detect spikes!")
+    #     print ("Detect spikes!")
                 
-        self.spikeDetection_threshold = threshold   
-        self.spikeDetection_ref = ref         
+    #     self.spikeDetection_threshold = threshold   
+    #     self.spikeDetection_ref = ref         
 
-        if self.AEC_trace != 0 :
-            self.AEC_trace.detectSpikes_python(self.spikeDetection_threshold, self.spikeDetection_ref)
+    #     if self.AEC_trace != 0 :
+    #         self.AEC_trace.detectSpikes_python(self.spikeDetection_threshold, self.spikeDetection_ref)
         
-        for tr in self.trainingset_traces :
-            tr.detectSpikes_python(self.spikeDetection_threshold, self.spikeDetection_ref)           
+    #     for tr in self.trainingset_traces :
+    #         tr.detectSpikes_python(self.spikeDetection_threshold, self.spikeDetection_ref)           
             
-        for tr in self.testset_traces :
-            tr.detectSpikes_python(self.spikeDetection_threshold, self.spikeDetection_ref)         
+    #     for tr in self.testset_traces :
+    #         tr.detectSpikes_python(self.spikeDetection_threshold, self.spikeDetection_ref)         
         
-        print ("Done!")
+    #     print ("Done!")
         
         
-    def detectSpikes(self, threshold=0.0, ref=3.0):
+    # def detectSpikes(self, threshold=0.0, ref=3.0):
 
-        """
-        Extract spike times form all experimental traces.
-        C implementation.
-        """
+    #     """
+    #     Extract spike times form all experimental traces.
+    #     C implementation.
+    #     """
 
-        print ("Detect spikes!")
+    #     print ("Detect spikes!")
                 
-        self.spikeDetection_threshold = threshold   
-        self.spikeDetection_ref = ref         
+    #     self.spikeDetection_threshold = threshold   
+    #     self.spikeDetection_ref = ref         
 
-        if self.AEC_trace != 0 :
-            self.AEC_trace.detectSpikes(self.spikeDetection_threshold, self.spikeDetection_ref)
+    #     if self.AEC_trace != 0 :
+    #         self.AEC_trace.detectSpikes(self.spikeDetection_threshold, self.spikeDetection_ref)
         
-        for tr in self.trainingset_traces :
-            tr.detectSpikes(self.spikeDetection_threshold, self.spikeDetection_ref)           
+    #     for tr in self.trainingset_traces :
+    #         tr.detectSpikes(self.spikeDetection_threshold, self.spikeDetection_ref)           
             
-        for tr in self.testset_traces :
-            tr.detectSpikes(self.spikeDetection_threshold, self.spikeDetection_ref)         
+    #     for tr in self.testset_traces :
+    #         tr.detectSpikes(self.spikeDetection_threshold, self.spikeDetection_ref)         
         
-        print ("Done!")
+    #     print ("Done!")
     
     
     def getTrainingSetNb(self):
