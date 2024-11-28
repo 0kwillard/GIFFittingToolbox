@@ -154,7 +154,7 @@ def main_code(CELL, version, chosen_tref = 1, plots=False, apply_AEC=False, save
     myGIF.gamma.setMetaParameters(length=500.0, binsize_lb=5.0, binsize_ub=1000.0, slope=5.0)
 
     # Perform the fit
-    var_explained_dV, var_explained_V = myGIF.fit(myExp, plots, DT_beforeSpike=5.0)
+    var_explained_dV, var_explained_V = myGIF.fit(myExp, plots, DT_beforeSpike=5.0) 
 
     # Plot the model parameters
     # myGIF.printParameters()
@@ -173,7 +173,7 @@ def main_code(CELL, version, chosen_tref = 1, plots=False, apply_AEC=False, save
     Md = myPrediction.computeMD_Kistler(4.0, dt_from_data)    
 
     # Plot data vs model prediction  
-    percent_variance = myPrediction.plotRaster(delta=1000.0) 
+    percent_variance = myPrediction.plotRaster(plots, delta=1000.0) 
 
     # Save the model and the parameters used in the fitting experiment
     if save:

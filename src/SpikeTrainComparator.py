@@ -203,7 +203,7 @@ class SpikeTrainComparator :
     # FUNCTIONS FOR PLOTTING
     #######################################################################
     
-    def plotRaster(self, delta=10.0, dt=0.1):
+    def plotRaster(self, plots, delta=10.0, dt=0.1):
         
         plt.figure(facecolor='white', figsize=(14,4))
         
@@ -253,7 +253,8 @@ class SpikeTrainComparator :
         
         print( "Percentage of variance explained: %0.1f" % (pct_variance_explained))
         
-        #plt.show()
+        if plots:
+            plt.show()
         return pct_variance_explained
         
         

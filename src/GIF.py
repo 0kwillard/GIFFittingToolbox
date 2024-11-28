@@ -188,8 +188,7 @@ class GIF(ThresholdModel) :
                                   int(p_eta_l), int(p_gamma_l))                                          
 
         time = np.arange(p_T)*self.dt
-        
-        eta_sum   = eta_sum[:p_T]     
+        eta_sum   = eta_sum[:p_T]    
         V_T = gamma_sum[:p_T] + p_Vt_star
      
         spks = (np.where(spks==1)[0])*self.dt
@@ -1038,7 +1037,7 @@ class GIF(ThresholdModel) :
         plt.plot(K_support, np.mean(K_all, axis=0), color='red', lw=2, zorder=10)  
         plt.plot([K_support[0], K_support[-1]], [0,0], ls=':', color='black', lw=2, zorder=-1)   
                 
-        Tools.removeAxis(plt.gca(), ['top', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'right']) #removed KATY
         plt.xlim([K_support[0], K_support[-1]])
         plt.xlabel('Time (ms)')
         plt.ylabel('Membrane filter (MOhm/ms)')  
@@ -1066,7 +1065,7 @@ class GIF(ThresholdModel) :
         plt.plot(K_support, np.mean(K_all, axis=0), color='red', lw=2, zorder=10)  
         plt.plot([K_support[0], K_support[-1]], [0,0], ls=':', color='black', lw=2, zorder=-1)   
                 
-        Tools.removeAxis(plt.gca(), ['top', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'right'])KATY
         plt.xlim([K_support[0], K_support[-1]/10.0])
         plt.xlabel('Time (ms)')
         plt.ylabel('Spike-triggered current (nA)')  
@@ -1095,7 +1094,7 @@ class GIF(ThresholdModel) :
         plt.plot([K_support[0], K_support[-1]], [0,0], ls=':', color='black', lw=2, zorder=-1)   
                 
         plt.xlim([K_support[0], K_support[-1]])
-        Tools.removeAxis(plt.gca(), ['top', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'right'])KATY
         plt.xlabel('Time (ms)')
         plt.ylabel('Spike-triggered threshold (mV)')  
  
@@ -1113,7 +1112,7 @@ class GIF(ThresholdModel) :
             
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('R (MOhm)')
-        Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
         plt.yticks([])        
         
         
@@ -1130,7 +1129,7 @@ class GIF(ThresholdModel) :
             
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('tau_m (ms)')
-        Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
         plt.yticks([])     
        
    
@@ -1147,7 +1146,7 @@ class GIF(ThresholdModel) :
             
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('El (mV)')
-        Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
         plt.yticks([])     
        
           
@@ -1166,7 +1165,7 @@ class GIF(ThresholdModel) :
         
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('Vr (mV)')
-        Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
         plt.yticks([])     
         
         
@@ -1183,7 +1182,7 @@ class GIF(ThresholdModel) :
             
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('Vt_star (mV)')
-        Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
         plt.yticks([])    
         
         # Vt*
@@ -1199,5 +1198,6 @@ class GIF(ThresholdModel) :
             
         plt.hist(p_all, histtype='bar', color='red', ec='white', lw=2)
         plt.xlabel('DV (mV)')
-        Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
+        #Tools.removeAxis(plt.gca(), ['top', 'left', 'right'])
         plt.yticks([])    
+        plt.show()
